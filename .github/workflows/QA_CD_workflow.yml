@@ -1,0 +1,52 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: Deploy on QA
+
+on:
+  push:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+  deploy_on_qa:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v2
+
+    - name: Create customer env file
+      working-directory: ./customer
+      run: |
+        touch .env
+        echo APP_SECRET=${{ secrets.QA_APP_SECRET }} >> .env
+        echo MONGODB_URI=${{ secrets.QA_CUSTOMER_DB_URL }} >> .env
+        echo MESSAGE_BROKER_URL=${{ secrets.QA_MSG_QUEUE_URL }} >> .env
+        echo PORT=8081 >> .env
+        cat .env
+
+    - name: Create Products Env file
+      working-directory: ./products
+      run: |
+        touch .env
+        echo APP_SECRET=${{ secrets.QA_APP_SECRET }} >> .env
+        echo MONGODB_URI=${{ secrets.QA_PRODUCTS_DB_URL }} >> .env
+        echo MESSAGE_BROKER_URL=${{ secrets.QA_MSG_QUEUE_URL }} >> .env
+        echo PORT=8082 >> .env
+        cat .env
+
+    - name: Create shopping env file
+      working-directory: ./shopping
+      run: |
+        touch .env
+        echo APP_SECRET=${{ secrets.QA_APP_SECRET }} >> .env
+        echo MONGODB_URI=${{ secrets.QA_SHOPPING_DB_URL }} >> .env
+        echo MESSAGE_BROKER_URL=${{ secrets.QA_MSG_QUEUE_URL }} >> .env
+        echo PORT=8083 >> .env
+        cat .env
+
+    - name: Generate Deployment package
+      run: |
+        zip -r deploy.zip . -x '*.git'
